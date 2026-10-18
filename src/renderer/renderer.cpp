@@ -3,6 +3,7 @@
 // done by deletionQueue when the Engine is destroyed.
 #include "renderer.h"
 #include "instance.h"
+#include "device.h"
 #include "../logging/debug_messenger.h"
 #include "../logging/logger.h"
 
@@ -12,6 +13,7 @@ Engine::Engine(GLFWwindow* window) : window(window) {
 	if (enableValidation) {
 		debugMessenger = make_debug_messenger(instance, deletionQueue);
 	}
+	physicalDevice = choose_physical_device(instance);
 }
 
 Engine::~Engine() {

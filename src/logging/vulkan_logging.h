@@ -21,4 +21,7 @@ namespace vklog {
 	void print_extensions(const std::vector<vk::ExtensionProperties>& extensions);
 	void print_layers(const std::vector<vk::LayerProperties>& layers);
 
+	// Print a GPU's name, type and supported Vulkan version.  (Stage 4)
+	void log(const vk::PhysicalDevice& device);
+
 }

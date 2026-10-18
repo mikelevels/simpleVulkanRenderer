@@ -10,6 +10,7 @@
 //   dispatch.cpp        storage for Vulkan-Hpp's function pointers
 //   instance.cpp        the Vulkan instance                       (Stage 2)
 //   ../logging/debug_messenger.cpp  validation messages           (Stage 3)
+//   device.cpp          choosing the GPU                          (Stage 4)
 //   render_thread.cpp   the thread the Engine lives on            (Stage 1)
 #pragma once
 #include "deletion_queue.h"
@@ -36,4 +37,6 @@ private:
 	vk::Instance instance;
 	// Stage 3: only created when validation is on (Debug builds).
 	vk::DebugUtilsMessengerEXT debugMessenger;
+	// Stage 4: the GPU. Not created by us, so nothing to destroy.
+	vk::PhysicalDevice physicalDevice;
 };

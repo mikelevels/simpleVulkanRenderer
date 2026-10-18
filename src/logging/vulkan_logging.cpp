@@ -54,4 +54,20 @@ namespace vklog {
 		}
 	}
 
+	void log(const vk::PhysicalDevice& device) {
+		Logger& logger = Logger::get_logger();
+		if (!logger.is_enabled()) {
+			return;
+		}
+		vk::PhysicalDeviceProperties properties = device.getProperties();
+		std::ostringstream line;
+		// vk::to_string turns any Vulkan-Hpp enum into its name, which
+		// replaces the author's hand-written switch over device types.
+		line << "Device: " << properties.deviceName.data()
+			<< " (" << vk::to_string(properties.deviceType) << ", Vulkan "
+			<< vk::apiVersionMajor(properties.apiVersion) << "."
+			<< vk::apiVersionMinor(properties.apiVersion) << ")";
+		logger.print(line.str());
+	}
+
 }

@@ -62,6 +62,9 @@ add_executable(App
 	# Stage 3: validation layers
 	src/logging/debug_messenger.h
 	src/logging/debug_messenger.cpp
+	# Stage 4: physical device
+	src/renderer/device.h
+	src/renderer/device.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)

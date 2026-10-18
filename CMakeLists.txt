@@ -52,9 +52,25 @@ add_executable(App
 	src/renderer/renderer.cpp
 	src/renderer/render_thread.h
 	src/renderer/render_thread.cpp
+	# Stage 2: the instance
+	src/logging/vulkan_logging.h
+	src/logging/vulkan_logging.cpp
+	src/renderer/deletion_queue.h
+	src/renderer/dispatch.cpp
+	src/renderer/instance.h
+	src/renderer/instance.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)
+
+# Vulkan-Hpp settings, given to EVERY file at once. Setting them with #define
+# inside one header (as the author does with VULKAN_HPP_NO_EXCEPTIONS) only
+# works if that header is always included first; two files that see different
+# settings get different versions of the same functions (bugsExplained.md, 11).
+target_compile_definitions(App PRIVATE
+	# Fetch every Vulkan function pointer at runtime (see dispatch.cpp).
+	VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
+)
 
 # C++20: the author moves to C++20 (stdcpp20) in later stages; we start there.
 target_compile_features(App PRIVATE cxx_std_20)

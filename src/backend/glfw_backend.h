@@ -24,6 +24,16 @@ public:
 	// The raw pointer, for the GLFW calls made by the app and the renderer.
 	GLFWwindow* get() const { return window; }
 
+	// Stage 7: the window's drawable area IN PIXELS, measured when the window
+	// was made. Screen coordinates (glfwGetWindowSize) and pixels
+	// (glfwGetFramebufferSize) differ on high-DPI screens; the swapchain needs
+	// pixels. Measured here because GLFW only allows these calls on the main
+	// thread, and the renderer runs on another one (bugsExplained.md, 19).
+	int framebuffer_width() const { return framebufferWidth; }
+	int framebuffer_height() const { return framebufferHeight; }
+
 private:
 	GLFWwindow* window{ nullptr };
+	int framebufferWidth{ 0 };
+	int framebufferHeight{ 0 };
 };

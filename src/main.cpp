@@ -18,7 +18,7 @@ int main() {
 	Logger::get_logger().set_mode(true);
 
 	GlfwWindow window(800, 600, "Simple Vulkan Renderer");
-	RenderThread renderThread(window.get());
+	RenderThread renderThread(window);
 	App app(window.get());
 
 	app.run();

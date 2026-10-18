@@ -24,6 +24,7 @@ GlfwWindow::GlfwWindow(int width, int height, const char* name) {
 		glfwTerminate();
 		throw std::runtime_error("glfwCreateWindow failed");
 	}
+	glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
 	std::ostringstream line;
 	line << "Made a window called \"" << name << "\", " << width << "x" << height;
 	Logger::get_logger().print(line.str());

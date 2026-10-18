@@ -83,4 +83,36 @@ namespace vklog {
 		}
 	}
 
+	void log(const vk::SurfaceCapabilitiesKHR& capabilities) {
+		Logger& logger = Logger::get_logger();
+		if (!logger.is_enabled()) {
+			return;
+		}
+		std::ostringstream text;
+		text << "Surface capabilities:\n"
+			<< "\timage count: min " << capabilities.minImageCount
+			<< ", max " << capabilities.maxImageCount << " (0 = no limit)\n"
+			<< "\tcurrent extent: " << capabilities.currentExtent.width
+			<< "x" << capabilities.currentExtent.height << "\n"
+			<< "\tcurrent transform: " << vk::to_string(capabilities.currentTransform) << "\n"
+			<< "\tsupported alpha: " << vk::to_string(capabilities.supportedCompositeAlpha) << "\n"
+			<< "\tsupported usage: " << vk::to_string(capabilities.supportedUsageFlags);
+		logger.print(text.str());
+	}
+
+	void log(const std::vector<vk::SurfaceFormatKHR>& formats) {
+		Logger& logger = Logger::get_logger();
+		for (const vk::SurfaceFormatKHR& format : formats) {
+			logger.print("\tsupported format: " + vk::to_string(format.format)
+				+ ", color space: " + vk::to_string(format.colorSpace));
+		}
+	}
+
+	void log(const std::vector<vk::PresentModeKHR>& modes) {
+		Logger& logger = Logger::get_logger();
+		for (vk::PresentModeKHR mode : modes) {
+			logger.print("\tsupported present mode: " + vk::to_string(mode));
+		}
+	}
+
 }

@@ -8,7 +8,7 @@
 // and stops. The real multithreading topics (sharing work between threads,
 // synchronizing them) come in Stage 13, where we stop for your review first.
 #pragma once
-#include <GLFW/glfw3.h>
+#include "../backend/glfw_backend.h"
 #include <atomic>
 #include <thread>
 
@@ -19,7 +19,7 @@
 // (bugsExplained.md, entry 5).
 class RenderThread {
 public:
-	explicit RenderThread(GLFWwindow* window);
+	explicit RenderThread(const GlfwWindow& window);
 	~RenderThread();   // sets `done`, then waits for the thread to finish
 
 	// A thread can't be copied (std::thread and std::atomic forbid it anyway;

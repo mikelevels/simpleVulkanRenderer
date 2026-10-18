@@ -70,6 +70,11 @@ add_executable(App
 	# Stage 6: surface
 	src/renderer/surface.h
 	src/renderer/surface.cpp
+	# Stage 7: swapchain
+	src/renderer/swapchain.h
+	src/renderer/swapchain.cpp
+	src/renderer/frame.h
+	src/renderer/frame.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)

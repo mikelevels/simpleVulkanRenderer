@@ -27,4 +27,9 @@ namespace vklog {
 	// Print each queue family: what it can do, how many queues.  (Stage 5)
 	void log(const std::vector<vk::QueueFamilyProperties>& queueFamilies);
 
+	// What a surface supports.  (Stage 7)
+	void log(const vk::SurfaceCapabilitiesKHR& capabilities);
+	void log(const std::vector<vk::SurfaceFormatKHR>& formats);
+	void log(const std::vector<vk::PresentModeKHR>& modes);
+
 }

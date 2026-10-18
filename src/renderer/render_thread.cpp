@@ -9,11 +9,12 @@ namespace {   // "anonymous namespace": visible in this .cpp file only
 
 // The function the render thread runs, from its first line to its last.
 // (The author's spawn_render_thread, from his main.cpp.)
-void render_thread_main(GLFWwindow* window, const std::atomic<bool>* done) {
+void render_thread_main(GLFWwindow* window, int width, int height,
+	const std::atomic<bool>* done) {
 	// An exception that escapes a thread's function calls std::terminate()
 	// and kills the whole program without a message, so catch and report.
 	try {
-		Engine engine(window);   // built and destroyed on THIS thread
+		Engine engine(window, width, height);   // built and destroyed on THIS thread
 		while (!done->load()) {
 			// Later stages draw one frame here. For now there is nothing to
 			// do, so sleep instead of spinning: the author's empty loop keeps
@@ -28,11 +29,14 @@ void render_thread_main(GLFWwindow* window, const std::atomic<bool>* done) {
 
 }
 
-RenderThread::RenderThread(GLFWwindow* window)
+RenderThread::RenderThread(const GlfwWindow& window)
 	// std::thread's constructor STARTS the thread right away: from this line
 	// on, render_thread_main runs at the same time as the code below.
+	// The arguments are COPIED into the new thread. The window's pixel size
+	// is read here, on the main thread (GLFW's rule), and copied over.
 	// `&done` passes a pointer: the thread must see the same flag, not a copy.
-	: thread(render_thread_main, window, &done) {
+	: thread(render_thread_main, window.get(), window.framebuffer_width(),
+		window.framebuffer_height(), &done) {
 }
 
 RenderThread::~RenderThread() {

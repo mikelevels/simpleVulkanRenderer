@@ -21,10 +21,11 @@ std::vector<const char*> required_device_extensions();
 // Throws if there is none.
 vk::PhysicalDevice choose_physical_device(vk::Instance instance);
 
-// Stage 5: the index of the first queue family that can do `queueType` work.
+// Stage 5: the index of the first queue family that can do `queueType` work
+// and (Stage 6), if `surface` isn't null, present images to that surface.
 // Throws if there is none.
 std::uint32_t find_queue_family_index(vk::PhysicalDevice physicalDevice,
-	vk::QueueFlags queueType);
+	vk::SurfaceKHR surface, vk::QueueFlags queueType);
 
 // Stage 5: create the logical device with one queue from `queueFamilyIndex`,
 // and push its destruction onto `deletionQueue`.

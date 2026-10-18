@@ -10,12 +10,17 @@
 // Your TITAN Xp has 5 families (see the log); family 0 does graphics,
 // compute and transfer; 3 and 4 are video decode/encode.
 std::uint32_t find_queue_family_index(vk::PhysicalDevice physicalDevice,
-	vk::QueueFlags queueType) {
+	vk::SurfaceKHR surface, vk::QueueFlags queueType) {
 	std::vector<vk::QueueFamilyProperties> families = physicalDevice.getQueueFamilyProperties();
 	vklog::log(families);
 	for (std::uint32_t i = 0; i < families.size(); ++i) {
 		// `flags & queueType` is non-zero when the family has the bit.
-		if (families[i].queueFlags & queueType) {
+		bool canDoWork = static_cast<bool>(families[i].queueFlags & queueType);
+		// Stage 6: getSurfaceSupportKHR returns a Bool32 that ANSWERS the
+		// question. The author tests whether the CALL succeeded instead,
+		// which is true for every family (bugsExplained.md, entry 15).
+		bool canPresent = !surface || physicalDevice.getSurfaceSupportKHR(i, surface);
+		if (canDoWork && canPresent) {
 			return i;
 		}
 	}

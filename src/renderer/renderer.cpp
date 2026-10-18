@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "instance.h"
 #include "device.h"
+#include "surface.h"
 #include "../logging/debug_messenger.h"
 #include "../logging/logger.h"
 
@@ -13,8 +14,10 @@ Engine::Engine(GLFWwindow* window) : window(window) {
 	if (enableValidation) {
 		debugMessenger = make_debug_messenger(instance, deletionQueue);
 	}
+	surface = make_surface(instance, window, deletionQueue);
 	physicalDevice = choose_physical_device(instance);
-	graphicsQueueFamilyIndex = find_queue_family_index(physicalDevice, vk::QueueFlagBits::eGraphics);
+	graphicsQueueFamilyIndex = find_queue_family_index(
+		physicalDevice, surface, vk::QueueFlagBits::eGraphics);
 	logicalDevice = create_logical_device(physicalDevice, graphicsQueueFamilyIndex, deletionQueue);
 	graphicsQueue = logicalDevice.getQueue(graphicsQueueFamilyIndex, 0);
 }

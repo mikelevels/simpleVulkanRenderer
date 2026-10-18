@@ -17,4 +17,8 @@ namespace vklog {
 	// Print a list of names, one per line, each with a tab in front.
 	void print_list(const std::vector<const char*>& names);
 
+	// Print the names of extensions / layers that Vulkan reports.  (Stage 3)
+	void print_extensions(const std::vector<vk::ExtensionProperties>& extensions);
+	void print_layers(const std::vector<vk::LayerProperties>& layers);
+
 }

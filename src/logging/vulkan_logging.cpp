@@ -31,4 +31,27 @@ namespace vklog {
 		}
 	}
 
+	void print_extensions(const std::vector<vk::ExtensionProperties>& extensions) {
+		Logger& logger = Logger::get_logger();
+		// `const auto&`: look at each element where it is, no copy. The
+		// author writes `for (vk::ExtensionProperties extension : extensions)`
+		// which copies a 260-byte struct per element.
+		for (const auto& extension : extensions) {
+			std::ostringstream line;
+			// extensionName is a fixed-size char array wrapper; .data() is
+			// the C string inside it.
+			line << "\t\"" << extension.extensionName.data() << "\"";
+			logger.print(line.str());
+		}
+	}
+
+	void print_layers(const std::vector<vk::LayerProperties>& layers) {
+		Logger& logger = Logger::get_logger();
+		for (const auto& layer : layers) {
+			std::ostringstream line;
+			line << "\t\"" << layer.layerName.data() << "\"";
+			logger.print(line.str());
+		}
+	}
+
 }

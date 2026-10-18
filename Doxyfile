@@ -1,0 +1,58 @@
+# Doxyfile: settings for Doxygen, which turns the /// comments in src/ into
+# HTML pages. Only the settings that differ from Doxygen's defaults are listed;
+# `doxygen -g full.txt` writes every setting with an explanation.
+# Run:   C:\Users\gonza\Dev\Tools\doxygen-1.18.0\doxygen.exe Doxyfile
+# Open:  build-docs\html\index.html
+# Docs:  https://www.doxygen.nl/manual/config.html
+
+PROJECT_NAME           = "Simple Vulkan Renderer"
+PROJECT_BRIEF          = "GetIntoGameDev's Vulkan 2024 series, followed stage by stage"
+OUTPUT_DIRECTORY       = build-docs
+
+# What to read: the code, plus the log as the front page.
+INPUT                  = src MYNOTES.md
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.cpp
+USE_MDFILE_AS_MAINPAGE = MYNOTES.md
+
+# Our comment style: /// ... where the first sentence is the summary.
+JAVADOC_AUTOBRIEF      = YES
+
+# EXTRACT_ALL = NO keeps Doxygen's "is not documented" warnings on, which is
+# how we find a declaration we forgot to document. YES would hide them.
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_ANON_NSPACES   = YES
+
+# Warnings: report everything, including wrong @param names.
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
+WARN_IF_INCOMPLETE_DOC = YES
+# Any warning makes the run FAIL (exit code 1), so a forgotten comment can't
+# slip through unnoticed.
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
+WARN_LOGFILE           = build-docs/doxygen-warnings.txt
+
+# Pages to build: HTML only.
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+SOURCE_BROWSER         = YES
+
+# Pass the project's macros so conditional code is read as the compiler sees it.
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+# Macros that CMake defines (Doxygen doesn't run CMake). Later, thread-safety
+# annotation macros (e.g. GUARDED_BY(x)=) go here too, so they expand to nothing.
+PREDEFINED             = VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 \
+                         SHADER_DIR=\"build/shaders\"
+
+# Graphviz draws include graphs and call graphs. It's not on PATH, so say where.
+HAVE_DOT               = YES
+DOT_PATH               = C:/Users/gonza/Dev/Tools/graphviz-16.1.0/bin
+DOT_IMAGE_FORMAT       = svg
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES

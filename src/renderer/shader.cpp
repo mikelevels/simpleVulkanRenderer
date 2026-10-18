@@ -1,12 +1,13 @@
-// shader.cpp: creating shader objects from SPIR-V files.
+/// @file shader.cpp
+/// @brief Creating shader objects from SPIR-V files.
 #include "shader.h"
 #include "../backend/file.h"
 #include "../logging/logger.h"
 
 namespace {
 
-// Describe one shader stage. `code` must stay alive until createShadersEXT
-// has returned, because the info only points at it.
+/// Describe one shader stage. `code` must stay alive until createShadersEXT
+/// has returned, because the info only points at it.
 vk::ShaderCreateInfoEXT describe_stage(vk::ShaderStageFlagBits stage,
 	vk::ShaderStageFlags nextStage, const std::vector<char>& code) {
 	vk::ShaderCreateInfoEXT info;
@@ -30,16 +31,16 @@ vk::ShaderCreateInfoEXT describe_stage(vk::ShaderStageFlagBits stage,
 std::vector<vk::ShaderEXT> make_shader_objects(vk::Device logicalDevice,
 	const char* vertexFilename, const char* fragmentFilename,
 	DeletionQueue& deletionQueue) {
-	std::vector<char> vertexCode = read_file(vertexFilename);
-	std::vector<char> fragmentCode = read_file(fragmentFilename);
-	std::vector<vk::ShaderCreateInfoEXT> infos = {
+	const std::vector<char> vertexCode = read_file(vertexFilename);
+	const std::vector<char> fragmentCode = read_file(fragmentFilename);
+	const std::vector<vk::ShaderCreateInfoEXT> infos = {
 		describe_stage(vk::ShaderStageFlagBits::eVertex, vk::ShaderStageFlagBits::eFragment, vertexCode),
 		describe_stage(vk::ShaderStageFlagBits::eFragment, {}, fragmentCode),
 	};
 	// In our SDK's Vulkan-Hpp, createShadersEXT returns a ResultValue (it can
 	// also succeed with eIncompatibleShaderBinaryEXT); errors still throw.
 	std::vector<vk::ShaderEXT> shaders = logicalDevice.createShadersEXT(infos).value;
-	for (vk::ShaderEXT shader : shaders) {
+	for (const vk::ShaderEXT shader : shaders) {
 		deletionQueue.push([logicalDevice, shader] {
 			logicalDevice.destroyShaderEXT(shader);
 		});

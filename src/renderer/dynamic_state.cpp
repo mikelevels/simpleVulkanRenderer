@@ -1,20 +1,21 @@
-// dynamic_state.cpp: every piece of drawing state, set one command at a time.
+/// @file dynamic_state.cpp
+/// @brief Every piece of drawing state, set one command at a time.
 #include "dynamic_state.h"
 
 namespace {
 
-// Where to draw, and how triangles become pixels.
+/// Where to draw, and how triangles become pixels.
 void set_rasterization_state(vk::CommandBuffer cmd, vk::Extent2D frameSize) {
 	// Viewport(x, y, width, height, minDepth, maxDepth): maps the -1..1
 	// coordinates of the vertex shader to pixels.
-	vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(frameSize.width),
+	const vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(frameSize.width),
 		static_cast<float>(frameSize.height), 0.0f, 1.0f);
 	cmd.setViewportWithCount(viewport);
 	cmd.setScissorWithCount(vk::Rect2D({ 0, 0 }, frameSize));   // no clipping
 	cmd.setRasterizerDiscardEnable(VK_FALSE);   // do produce pixels
 	cmd.setPolygonModeEXT(vk::PolygonMode::eFill);
 	cmd.setRasterizationSamplesEXT(vk::SampleCountFlagBits::e1);   // no MSAA
-	vk::SampleMask sampleMask = 0x1;
+	const vk::SampleMask sampleMask = 0x1;
 	cmd.setSampleMaskEXT(vk::SampleCountFlagBits::e1, sampleMask);
 	cmd.setAlphaToCoverageEnableEXT(VK_FALSE);
 	cmd.setCullMode(vk::CullModeFlagBits::eNone);   // draw both sides
@@ -29,7 +30,7 @@ void set_rasterization_state(vk::CommandBuffer cmd, vk::Extent2D frameSize) {
 	cmd.setPrimitiveRestartEnable(VK_FALSE);
 }
 
-// Depth/stencil tests, vertex input, and how colors are written.
+/// Depth/stencil tests, vertex input, and how colors are written.
 void set_output_state(vk::CommandBuffer cmd) {
 	cmd.setDepthTestEnable(VK_FALSE);
 	cmd.setDepthWriteEnable(VK_FALSE);
@@ -38,14 +39,14 @@ void set_output_state(vk::CommandBuffer cmd) {
 	// Also required by the spec when a vertex shader object is bound, and
 	// missing in the author's Stage 10 (he adds it in Stage 14; entry 22).
 	cmd.setVertexInputEXT(nullptr, nullptr);
-	vk::Bool32 blendEnable = VK_FALSE;   // overwrite, don't blend
+	const vk::Bool32 blendEnable = VK_FALSE;   // overwrite, don't blend
 	cmd.setColorBlendEnableEXT(0, blendEnable);
 	// Only used when blending is on; harmless to set.
-	vk::ColorBlendEquationEXT equation(vk::BlendFactor::eOne, vk::BlendFactor::eZero,
+	const vk::ColorBlendEquationEXT equation(vk::BlendFactor::eOne, vk::BlendFactor::eZero,
 		vk::BlendOp::eAdd, vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd);
 	cmd.setColorBlendEquationEXT(0, equation);
 	using C = vk::ColorComponentFlagBits;
-	vk::ColorComponentFlags writeMask = C::eR | C::eG | C::eB | C::eA;
+	const vk::ColorComponentFlags writeMask = C::eR | C::eG | C::eB | C::eA;
 	cmd.setColorWriteMaskEXT(0, writeMask);
 }
 

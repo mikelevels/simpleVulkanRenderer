@@ -1,4 +1,5 @@
-// image.cpp: image views.
+/// @file image.cpp
+/// @brief Image views.
 #include "image.h"
 
 vk::ImageView create_image_view(vk::Device logicalDevice, vk::Image image, vk::Format format) {

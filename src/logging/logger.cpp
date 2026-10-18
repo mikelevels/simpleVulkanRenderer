@@ -1,4 +1,5 @@
-// logger.cpp: the one Logger, and how it prints.
+/// @file logger.cpp
+/// @brief The one Logger, and how it prints.
 #include "logger.h"
 #include <iostream>
 
@@ -27,8 +28,11 @@ void Logger::print(std::string_view message) {
 	// lock_guard locks the mutex here and unlocks it at the closing brace
 	// (RAII again). A second thread calling print() waits on this line until
 	// the first one has finished its whole line.
-	std::lock_guard<std::mutex> lock(printMutex);
+	const std::lock_guard<std::mutex> lock(printMutex);
 	// std::endl = '\n' + flush: the line reaches the console immediately,
 	// which is what you want from a debug log if the program then crashes.
-	std::cout << message << std::endl;
+	// clang-tidy's performance-avoid-endl warns because flushing is slow in
+	// code that prints a lot; here the flush is the point, so a NOLINT
+	// comment turns off that one check on this one line, and says why.
+	std::cout << message << std::endl;   // NOLINT(performance-avoid-endl): flush on purpose
 }

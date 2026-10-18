@@ -30,5 +30,15 @@ Run threaded code in both Debug and Release (the author's advice, and ours).
 | 8 Image Views | `MyNotes/stage08-imageViews.md` | one image view per swapchain image |
 | 9 Shader Objects | `MyNotes/stage09-shaderObjects.md` | GLSL shaders compiled by CMake, linked shader objects |
 | 10 Dynamic Rendering | `MyNotes/stage10-dynamicRendering.md` | command buffers, layouts, dynamic state, acquire/submit/present: **the triangle** |
+| 10b Frame pacing (our lesson) | `MyNotes/stage10b-framePacing.md` | frames-per-second counter; FIFO by default: 60 fps at 0.03 core instead of 5,880 fps at 0.78 |
+| 10 review | `MyNotes/analysis-2026-10-15.md` | analysis-driven fixes: survive minimize/resize (swapchain rebuild), const and rule-of-five cleanups, Doxygen comments everywhere, `tools/analyze.bat`, `tools/asan.bat`, `.clang-tidy` |
 
 Review guide for Stages 1 to 10: `MyNotes/milestone-helloTriangle.md`.
+
+# Analysis
+
+```
+tools\analyze.bat      clang-tidy (+ -Wdocumentation), Cppcheck, lizard
+tools\asan.bat         AddressSanitizer build in build-asan\
+```
+Details: `MyNotes/analysis-2026-10-15.md`.

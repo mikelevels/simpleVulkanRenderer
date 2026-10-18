@@ -124,3 +124,7 @@ The author's dynamic state function is ~35 lines. Ours is two functions under 25
 | 8-parameter `transition_image_layout` | `LayoutTransition` struct | named fields |
 | `renderingInfo` stored in Frame, pointing at another member | built locally while recording | no dangling pointer if a Frame moves |
 | present result ignored | `[[nodiscard]]` respected with `(void)` + reason | build treats warnings as errors |
+
+## Update (2026-10-15 review)
+
+Two things in this stage changed after the analysis sweep: minimizing or resizing the window no longer stops the renderer (`swapchain_rebuild.cpp`, bugsExplained 30), and the present mode is now FIFO (60 frames per second, 0.03 core) instead of Mailbox (5,880 frames per second, 0.78 core). See `stage10b-framePacing.md` and `analysis-2026-10-15.md`.

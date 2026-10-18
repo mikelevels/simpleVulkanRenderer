@@ -89,6 +89,11 @@ add_executable(App
 	src/renderer/dynamic_state.h
 	src/renderer/dynamic_state.cpp
 	src/renderer/draw.cpp
+	# Stage 10b: frame pacing (measure, then cap the frame rate)
+	src/renderer/frame_timer.h
+	src/renderer/frame_timer.cpp
+	# Stage 10 review: survive a minimize (the minimum of Stage 15's recreation)
+	src/renderer/swapchain_rebuild.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)
@@ -101,6 +106,13 @@ target_compile_definitions(App PRIVATE
 	# Fetch every Vulkan function pointer at runtime (see dispatch.cpp).
 	VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
 )
+# Stage 10b: force a present mode (Fifo, Mailbox, Immediate) to repeat the
+# frame-pacing measurements, e.g. cmake -B build-mailbox -DSVR_FORCE_PRESENT_MODE=Mailbox.
+# Empty (the default) means swapchain.h's choice, FIFO.
+set(SVR_FORCE_PRESENT_MODE "" CACHE STRING "Force a present mode for measurements")
+if (SVR_FORCE_PRESENT_MODE)
+	target_compile_definitions(App PRIVATE SVR_FORCE_PRESENT_MODE=e${SVR_FORCE_PRESENT_MODE})
+endif()
 
 # --- Stage 9: compile the GLSL shaders to SPIR-V at build time ---------------
 # The author runs a compile.bat by hand (with his own SDK path inside). Here

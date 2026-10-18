@@ -1,5 +1,7 @@
-// glfw_backend.cpp: opening and closing the GLFW window.
-// GLFW docs: https://www.glfw.org/docs/3.4/window_guide.html
+/// @file glfw_backend.cpp
+/// @brief GlfwWindow: opening and closing the GLFW window.
+///
+/// GLFW docs: https://www.glfw.org/docs/3.4/window_guide.html
 #include "glfw_backend.h"
 #include "../logging/logger.h"
 #include <sstream>
@@ -13,8 +15,9 @@ GlfwWindow::GlfwWindow(int width, int height, const char* name) {
 	// GLFW makes an OpenGL context by default. Vulkan doesn't use one, and a
 	// window that has one cannot get a Vulkan surface later (Stage 6).
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	// Resizing changes the size of the swapchain images (Stage 7), which we
-	// only learn to rebuild in Stage 15. Until then: a fixed size.
+	// The user can't resize the window until Stage 15. (It can still be
+	// minimized, or resized by other programs; the renderer copes with that
+	// since the Stage 10 review, see draw.cpp.)
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	window = glfwCreateWindow(width, height, name, nullptr, nullptr);

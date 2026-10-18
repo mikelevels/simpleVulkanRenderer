@@ -28,7 +28,7 @@ Swapchain has 3 images
 ...
 Deleted swapchain
 ```
-The "invalid ( 3ba04c28 )" mode is real: 0x3BA04C28 = 1000361000, `VK_PRESENT_MODE_FIFO_LATEST_READY_EXT`, a mode newer than our SDK's headers (1.3.283), so `vk::to_string` doesn't know its name. Your driver (1.4.312) does.
+The last mode is real: 1000361000, `VK_PRESENT_MODE_FIFO_LATEST_READY_EXT`, a mode newer than our SDK's headers (1.3.283). `vk::to_string` prints it as "invalid ( 3ba04c28 )"; since the 2026-10-15 review `vulkan_logging.cpp` names it itself. Your driver (1.4.312) supports it.
 
 New files: `swapchain.{h,cpp}`, `frame.{h,cpp}`; `glfw_backend` now measures the window in pixels on the main thread.
 
@@ -111,3 +111,7 @@ The author's swapchain deleter captures `this` and reads `chain` when it runs; t
 | `uint32_t imageCount;` | `{ 0 }` | no garbage |
 | deleter captures `this` | captures the handle | survives moves |
 | hand-written flag printing | `vk::to_string` on flags | shorter |
+
+## Update (2026-10-15 review)
+
+The present mode is now FIFO by default (`preferredPresentMode` in `swapchain.h`); the measurements behind that are in `stage10b-framePacing.md`.

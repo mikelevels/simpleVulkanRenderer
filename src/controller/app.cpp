@@ -1,4 +1,5 @@
-// app.cpp: the main thread's event loop.
+/// @file app.cpp
+/// @brief The main thread's event loop.
 #include "app.h"
 #include "../logging/logger.h"
 

@@ -5,7 +5,9 @@ Read this first when you sit down to review. It ties the ten stage notes togethe
 Companion files:
 - `plan.md`: stage list, decisions, GPU check, toolchain.
 - `stage01-appStructure.md` ... `stage10-dynamicRendering.md`: one per stage, each with the Vulkan ideas, what the video gets wrong, and a C++ refresher with sources and examples.
-- `bugsExplained.md`: all 29 bugs in the author's code, bad vs good, grouped in families.
+- `bugsExplained.md`: all 31 bugs (29 in the author's code, 2 more found by the analysis tools in his and our Stage 10), bad vs good, grouped in families.
+- `stage10b-framePacing.md`: the frame-pacing lesson (FIFO vs Mailbox, measured).
+- `analysis-2026-10-15.md`: what the analysis tools found, what changed, and how to rerun them.
 - `../MYNOTES.md`: the log and build commands.
 
 ![the result](images/stage10-triangle.png)
@@ -79,11 +81,11 @@ Tip: watch each video first, then read our stage note: the "What the video gets 
 
 | Family | Entries | One-line lesson |
 |---|---|---|
-| Lifetime | 1, 9, 25, 29 | cleanup belongs in destructors; wait for the GPU before destroying |
+| Lifetime | 1, 9, 25, 29, 30 | cleanup belongs in destructors; wait for the GPU before destroying; rebuild what the window outgrows |
 | Silent garbage | 2, 3, 17, 20, 26 | stop at the first failure |
 | Threads | 4, 5, 8, 19 | check each function's thread rules; join every thread |
 | Design | 6, 13, 24 | one switch per job; constructors construct |
-| Performance | 7 | block, don't spin |
+| Performance | 7, 31 | block, don't spin; don't draw frames nobody sees |
 | Wrong question | 15, 18 | read the right part of the answer; read field docs |
 | Spec rules | 10, 14, 16, 22, 23, 28 | the spec's "must"s apply even when nothing complains |
 | Build | 11, 12, 21, 27 | settings for every file at once; no machine-specific paths |
@@ -109,11 +111,14 @@ Still present in the author's final Stage 30: bugs 15, 18, 20 (and 22's front fa
 | Validation (Debug) | no errors or warnings from our code (3 warnings about GOG Galaxy's layer name) |
 | Picture | the triangle, Debug and Release |
 | CPU, idle window (Stage 1) | 0.05 s per 3 s (author's version: 3.1 s) |
-| CPU, drawing (Stage 10) | about 0.7 core: the render thread waits on the GPU every frame; Stages 12 and 14 fix that |
+| CPU, drawing (Stage 10, Mailbox) | 0.78 core at 5,880 frames per second |
+| CPU, drawing (after Stage 10b, FIFO) | 0.03 core at 60 frames per second |
+| Minimize, outside resize, maximize | keeps drawing (since the 2026-10-15 review) |
+| clang-tidy, Cppcheck, lizard, ASan | 0 findings (`tools\analyze.bat`, `tools\asan.bat`) |
 
 ## 7. What comes next
 
 - **Stage 11**, runtime shader compilation (shaderc, in the SDK).
 - **Stage 12**, synchronization: semaphores and fences replace our two CPU waits.
 - **STOP before Stage 13**, multithreaded rendering. Review threads, mutexes, atomics, and task systems first; then we go through it line by line. The same channel has a "Multithreading with C++" playlist: https://www.youtube.com/playlist?list=PLn3eTxaOtL2NLlk1rRb_hiZw9uWHxl-3Q
-- **Commits**: each stage is saved separately; on your word ("commit") each becomes its own commit, Stage 1 to Stage 10.
+- **Commits**: each stage is saved separately; on your word ("commit") each becomes its own commit, Stage 1 to Stage 10, then one more for the 2026-10-15 review (Stage 10b lesson, fixes, Doxygen comments).

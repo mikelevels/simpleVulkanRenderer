@@ -53,6 +53,7 @@ Stages 1 to 10 are done: the triangle is on screen (`images/stage10-triangle.png
 | 10 | Dynamic Rendering | 10 - command buffers | done, awaiting commit |
 | 11 | Runtime Shader Compilation | 11 - spirv compilation | |
 | 12 | Synchronization | 12 - synchronization | |
+| 10b | Frame pacing (our lesson, from the 2026-10-15 analysis) | - | done, awaiting commit |
 | **13** | **Multithreaded Rendering** | 13 - multithreaded rendering (two versions: conservative, aggressive) | **STOP before this one: your review of multithreading first, then line by line together** |
 | 14 | Frames in Flight | 14 - frames in flight | |
 | 15 | Swapchain Recreation | 15 - swapchain recreation | |

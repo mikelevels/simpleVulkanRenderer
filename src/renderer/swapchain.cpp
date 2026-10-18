@@ -1,4 +1,5 @@
-// swapchain.cpp: asking the surface what it supports, choosing, creating.
+/// @file swapchain.cpp
+/// @brief Swapchain: asking the surface what it supports, choosing, creating.
 #include "swapchain.h"
 #include "../logging/logger.h"
 #include "../logging/vulkan_logging.h"
@@ -8,7 +9,7 @@
 void Swapchain::build(vk::Device logicalDevice, vk::PhysicalDevice physicalDevice,
 	vk::SurfaceKHR surface, std::uint32_t width, std::uint32_t height,
 	DeletionQueue& deletionQueue) {
-	SurfaceDetails support = query_surface_support(physicalDevice, surface);
+	const SurfaceDetails support = query_surface_support(physicalDevice, surface);
 	format = choose_surface_format(support.formats);
 	extent = choose_extent(width, height, support.capabilities);
 	imageCount = choose_image_count(support.capabilities);
@@ -25,7 +26,7 @@ void Swapchain::build(vk::Device logicalDevice, vk::PhysicalDevice physicalDevic
 	createInfo.clipped = VK_TRUE;   // skip pixels hidden behind other windows
 
 	chain = logicalDevice.createSwapchainKHR(createInfo);
-	vk::SwapchainKHR handle = chain;   // capture the handle, not `this`
+	const vk::SwapchainKHR handle = chain;   // capture the handle, not `this`
 	deletionQueue.push([logicalDevice, handle] {
 		logicalDevice.destroySwapchainKHR(handle);
 		Logger::get_logger().print("Deleted swapchain");
@@ -51,27 +52,30 @@ vk::SurfaceFormatKHR Swapchain::choose_surface_format(
 	// picks UNORM, as the official tutorial's older versions did; SRGB would
 	// make the GPU apply gamma correction for us. We keep his choice for now
 	// so the colors match his videos (see stage07 notes, "UNORM vs SRGB").
-	for (const vk::SurfaceFormatKHR& candidate : formats) {
-		if (candidate.format == vk::Format::eB8G8R8A8Unorm
-			&& candidate.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
-			return candidate;
-		}
+	// std::find_if (from <algorithm>) returns an iterator to the first element
+	// for which the lambda returns true, or formats.end() if there is none.
+	// It replaces a hand-written search loop (Cppcheck's useStlAlgorithm).
+	const auto wanted = std::find_if(formats.begin(), formats.end(),
+		[](const vk::SurfaceFormatKHR& candidate) {
+			return candidate.format == vk::Format::eB8G8R8A8Unorm
+				&& candidate.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
+		});
+	if (wanted != formats.end()) {
+		return *wanted;
 	}
 	return formats.at(0);   // .at() throws if the list is empty; [0] wouldn't
 }
 
 vk::PresentModeKHR Swapchain::choose_present_mode(
 	const std::vector<vk::PresentModeKHR>& presentModes) {
-	// eFifo: wait for the monitor's refresh (v-sync); always available.
-	// eMailbox: never wait; a newer finished image replaces the queued one.
-	// The author prefers mailbox (lowest latency, but the GPU draws as many
-	// frames as it can, most of them never shown).
-	for (vk::PresentModeKHR mode : presentModes) {
-		if (mode == vk::PresentModeKHR::eMailbox) {
-			return mode;
-		}
-	}
-	return vk::PresentModeKHR::eFifo;
+	// Stage 10b: FIFO (wait for the monitor's refresh) is our default; the
+	// author prefers Mailbox. See preferredPresentMode in swapchain.h and
+	// MyNotes/stage10b-framePacing.md for the measurements behind the choice.
+	// std::find (from <algorithm>) looks for one value; FIFO is the fallback
+	// because it is the only mode every GPU must support.
+	const bool offered = std::find(presentModes.begin(), presentModes.end(),
+		preferredPresentMode) != presentModes.end();
+	return offered ? preferredPresentMode : vk::PresentModeKHR::eFifo;
 }
 
 vk::Extent2D Swapchain::choose_extent(std::uint32_t width, std::uint32_t height,

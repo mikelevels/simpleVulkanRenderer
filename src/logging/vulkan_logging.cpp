@@ -1,7 +1,31 @@
-// vulkan_logging.cpp: how Vulkan information is printed.
+/// @file vulkan_logging.cpp
+/// @brief How Vulkan information is printed.
 #include "vulkan_logging.h"
 #include "logger.h"
 #include <sstream>
+#include <string>
+
+namespace {
+
+/// The name of a present mode, including ones newer than our SDK's headers.
+///
+/// vk::to_string only knows the enum values in the headers it was built from
+/// (SDK 1.3.283). Your driver (Vulkan 1.4) also offers 1000361000,
+/// VK_PRESENT_MODE_FIFO_LATEST_READY_EXT (from the 2024 extension
+/// VK_EXT_present_mode_fifo_latest_ready), which the old headers print as
+/// "invalid ( 3ba04c28 )". We name it ourselves.
+std::string present_mode_name(vk::PresentModeKHR mode) {
+	// Compare the NUMBER, not an enum value: casting 1000361000 to the enum
+	// would create a value the enum doesn't list, which clang-tidy's
+	// EnumCastOutOfRange check rightly flags.
+	constexpr int fifoLatestReady = 1000361000;
+	if (static_cast<int>(mode) == fifoLatestReady) {
+		return "FifoLatestReadyEXT (newer than our SDK's headers)";
+	}
+	return vk::to_string(mode);
+}
+
+}
 
 namespace vklog {
 
@@ -110,8 +134,8 @@ namespace vklog {
 
 	void log(const std::vector<vk::PresentModeKHR>& modes) {
 		Logger& logger = Logger::get_logger();
-		for (vk::PresentModeKHR mode : modes) {
-			logger.print("\tsupported present mode: " + vk::to_string(mode));
+		for (const vk::PresentModeKHR mode : modes) {
+			logger.print("\tsupported present mode: " + present_mode_name(mode));
 		}
 	}
 

@@ -11,16 +11,16 @@ The bugs fall into a few families. Learn the family and you will spot the next o
 
 | Family | Entries |
 |---|---|
-| **Lifetime**: something released too early, too late, never, or twice | 1, 9, 25, 29 |
+| **Lifetime**: something released too early, too late, never, or twice; or not rebuilt when it must be | 1, 9, 25, 29, 30 |
 | **Silent garbage**: errors that are not reported | 2, 3, 17, 20, 26 |
 | **Threads**: two threads touching the same thing, or a thread that isn't stopped properly | 4, 5, 8, 19 |
 | **Design**: code that works but fights the reader or the next stage | 6, 13, 24 |
-| **Performance**: code that is correct but wastes the machine | 7 |
+| **Performance**: code that is correct but wastes the machine | 7, 31 |
 | **Wrong question**: the code asks Vulkan something, then reads the wrong part of the answer | 15, 18 |
 | **Spec rules**: code that breaks a "must" in the Vulkan spec, whether or not anything complains | 10, 14, 16, 22, 23, 28 |
 | **Build**: code that only builds or runs on the author's machine | 11, 12, 21, 27 |
 
-Entries 1 to 8 are Stage 1. Entries 9 to 29 are Stages 2 to 10; their bad code is from the author's `finished` folder of the stage named.
+Entries 1 to 8 are Stage 1. Entries 9 to 29 are Stages 2 to 10; their bad code is from the author's `finished` folder of the stage named. Entries 30 and 31 were found by the 2026-10-15 analysis sweep, in our Stage 10 as well as the author's.
 
 ---
 
@@ -735,3 +735,86 @@ shaders = make_shader_objects(logicalDevice,
 **Symptom:** the author's projects expect a `dependencies\` folder with `glfw3.lib` and headers copied into each stage; on your PC most stage folders don't have it, so they don't build as downloaded.
 
 **Good:** `CMakeLists.txt` builds GLFW from source and finds the Vulkan SDK through `VULKAN_SDK`. Nothing is copied per stage.
+
+---
+
+# Found by the analysis tools (2026-10-15)
+
+These two were in OUR code as well as the author's: our Stage 10 copied his behavior. The sweep's dynamic tests (scripted resizes, CPU sampling, a profiler) found them; reading the code hadn't.
+
+## Lifetime
+
+### 30. Minimizing the window stops the renderer for good
+
+**Stage:** 10 (ours and the author's; he adds swapchain recreation in Stage 15).
+
+**Symptom:** minimize the window and restore it: the picture is frozen. The log ends with `vk::Queue::presentKHR: ErrorOutOfDateKHR`, the render thread's thread count drops (20 -> 13 on your PC), and only closing the window still works. Resizing it from another program (the sweep's test) does the same.
+
+**Bad** (our Stage 10):
+```cpp
+// render_thread.cpp: any exception ends the render thread
+try {
+    Engine engine(window, width, height);
+    while (!done->load()) { engine.draw(); }
+}
+catch (const std::exception& error) { Logger::get_logger().print(error.what()); }
+```
+and `presentKHR` throws `vk::OutOfDateKHRError` as soon as the window is minimized.
+
+**Good** (`draw.cpp`, `swapchain_rebuild.cpp`):
+```cpp
+void Engine::draw() {
+    if (swapchainOutOfDate) {
+        if (!rebuild_swapchain()) {        // still minimized: size 0 x 0
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            return;
+        }
+        swapchainOutOfDate = false;
+    }
+    try { draw_frame(); }
+    catch (const vk::OutOfDateKHRError&) { swapchainOutOfDate = true; }   // only this error
+}
+```
+`rebuild_swapchain()` waits for the GPU, flushes a second deletion queue that holds only the swapchain's objects (command buffers, image views, the swapchain), and makes them again at the surface's new size. Tested: minimize/restore, three outside resizes and a maximize all keep drawing, with no validation errors and a clean AddressSanitizer run.
+
+**Why:** "out of date" is not a failure, it's Vulkan saying "this swapchain was made for a window that no longer looks like this". The spec: once `VK_ERROR_OUT_OF_DATE_KHR` is returned, presenting to that swapchain will keep failing, so it must be recreated. Treating an expected event as fatal is the same family as entry 26 in reverse: here the error *was* reported, and we stopped when we should have recovered. Source: https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#vkQueuePresentKHR
+
+## Performance
+
+### 31. The frame rate has no cap: 5,880 frames per second to show 60
+
+**Stage:** 7/10 (the author's Mailbox choice; later stages pick Immediate).
+
+**Symptom:** 0.78 of a CPU core busy and the GPU awake all the time, for a triangle; on a laptop, fan noise and battery drain. AMD uProf: 62 % of the CPU time inside the NVIDIA driver.
+
+**Bad:**
+```cpp
+for (vk::PresentModeKHR mode : presentModes) {
+    if (mode == vk::PresentModeKHR::eMailbox) { return mode; }
+}
+return vk::PresentModeKHR::eFifo;
+```
+
+**Good** (`swapchain.h` / `swapchain.cpp`): FIFO by default, Mailbox/Immediate on request.
+```cpp
+inline constexpr vk::PresentModeKHR preferredPresentMode = vk::PresentModeKHR::eFifo;
+```
+Result: 59.9 frames per second at 0.03 core.
+
+**Why:** measured, step by step, in `stage10b-framePacing.md`. A render loop with nothing to wait for draws as fast as it can; FIFO gives it the monitor to wait for.
+
+---
+
+# Style findings the tools reported (not bugs, but now fixed)
+
+| Tool / check | What it said | What we did |
+|---|---|---|
+| clang-tidy `cppcoreguidelines-special-member-functions` (32) | classes that `= delete` copying say nothing about moving | added `X(X&&) = delete;` and `operator=(X&&) = delete;` to Engine, GlfwWindow, RenderThread, DeletionQueue, Logger. They were already not movable (a deleted copy hides the moves); now the code says so. |
+| clang-tidy `misc-const-correctness` (38) | locals that never change could be `const` | made them `const`. A `const` local tells the reader "this value is final" and lets the compiler catch an accidental change. |
+| clang-tidy `readability-make-member-function-const` | `Frame::record_rendering` could be `const` | moved it out of the class (a free function in `frame.cpp`): a "const" method that records GPU commands would read as "changes nothing". |
+| clang-tidy `performance-avoid-endl` | `std::endl` flushes | kept on purpose in `Logger::print` (a debug log should reach the screen before a crash), with `// NOLINT(performance-avoid-endl): flush on purpose`. |
+| clang-tidy `bugprone-signed-bitwise` | `|` on enum flags | false positive for Vulkan-Hpp flag types; no change. |
+| Cppcheck `useInitializationList` | `Frame::imageView` assigned in the constructor body | now set in the initializer list. |
+| Cppcheck `useStlAlgorithm` (6) | hand-written search loops | `std::any_of` (instance.cpp, device.cpp), `std::find_if` (swapchain.cpp, instance.cpp), `std::find` (swapchain.cpp). One loop kept (renderer.cpp: building Frames has side effects), with `// cppcheck-suppress useStlAlgorithm` and the reason. |
+
+After the changes: clang-tidy (the sweep's check list plus `-Wdocumentation`) 0 findings, Cppcheck 0, lizard 0 functions over 25 lines, AddressSanitizer clean. Details: `analysis-2026-10-15.md`.

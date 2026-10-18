@@ -16,6 +16,7 @@
 //   surface.cpp         Vulkan's view of the window               (Stage 6)
 //   swapchain.cpp       the images shown in the window            (Stage 7)
 //   frame.cpp           what's needed to draw into one image      (Stage 7)
+//   image.cpp           image views                               (Stage 8)
 #pragma once
 #include "deletion_queue.h"
 #include "frame.h"

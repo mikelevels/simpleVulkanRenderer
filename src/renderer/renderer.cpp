@@ -45,7 +45,9 @@ void Engine::make_swapchain_objects(int width, int height) {
 	std::vector<vk::Image> images = logicalDevice.getSwapchainImagesKHR(swapchain.chain);
 	frames.reserve(images.size());   // one allocation instead of several
 	for (vk::Image image : images) {
-		frames.emplace_back(image);  // builds the Frame in place: Frame(image)
+		// emplace_back builds the Frame in place, calling
+		// Frame(image, logicalDevice, format, deletionQueue).
+		frames.emplace_back(image, logicalDevice, swapchain.format.format, deletionQueue);
 	}
 	Logger::get_logger().print("Swapchain has " + std::to_string(frames.size()) + " images");
 }

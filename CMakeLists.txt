@@ -75,6 +75,9 @@ add_executable(App
 	src/renderer/swapchain.cpp
 	src/renderer/frame.h
 	src/renderer/frame.cpp
+	# Stage 8: image views
+	src/renderer/image.h
+	src/renderer/image.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)

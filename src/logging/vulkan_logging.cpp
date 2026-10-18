@@ -70,4 +70,17 @@ namespace vklog {
 		logger.print(line.str());
 	}
 
+	void log(const std::vector<vk::QueueFamilyProperties>& queueFamilies) {
+		Logger& logger = Logger::get_logger();
+		// size_t, not uint32_t: .size() returns size_t, and comparing the two
+		// is a signed/unsigned-width warning waiting to happen.
+		for (std::size_t i = 0; i < queueFamilies.size(); ++i) {
+			std::ostringstream line;
+			line << "Queue family " << i << ": "
+				<< queueFamilies[i].queueCount << " queue(s), "
+				<< vk::to_string(queueFamilies[i].queueFlags);
+			logger.print(line.str());
+		}
+	}
+
 }

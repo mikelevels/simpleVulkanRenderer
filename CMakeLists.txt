@@ -65,6 +65,8 @@ add_executable(App
 	# Stage 4: physical device
 	src/renderer/device.h
 	src/renderer/device.cpp
+	# Stage 5: logical device
+	src/renderer/logical_device.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)

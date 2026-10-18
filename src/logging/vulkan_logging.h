@@ -24,4 +24,7 @@ namespace vklog {
 	// Print a GPU's name, type and supported Vulkan version.  (Stage 4)
 	void log(const vk::PhysicalDevice& device);
 
+	// Print each queue family: what it can do, how many queues.  (Stage 5)
+	void log(const std::vector<vk::QueueFamilyProperties>& queueFamilies);
+
 }

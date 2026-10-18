@@ -11,6 +11,7 @@
 //   instance.cpp        the Vulkan instance                       (Stage 2)
 //   ../logging/debug_messenger.cpp  validation messages           (Stage 3)
 //   device.cpp          choosing the GPU                          (Stage 4)
+//   logical_device.cpp  queue families, the logical device        (Stage 5)
 //   render_thread.cpp   the thread the Engine lives on            (Stage 1)
 #pragma once
 #include "deletion_queue.h"
@@ -39,4 +40,9 @@ private:
 	vk::DebugUtilsMessengerEXT debugMessenger;
 	// Stage 4: the GPU. Not created by us, so nothing to destroy.
 	vk::PhysicalDevice physicalDevice;
+	// Stage 5: our connection to the GPU, and the queue we send work to.
+	// Queues belong to the device: they are never destroyed separately.
+	vk::Device logicalDevice;
+	std::uint32_t graphicsQueueFamilyIndex{ 0 };
+	vk::Queue graphicsQueue;
 };

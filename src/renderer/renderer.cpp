@@ -14,6 +14,9 @@ Engine::Engine(GLFWwindow* window) : window(window) {
 		debugMessenger = make_debug_messenger(instance, deletionQueue);
 	}
 	physicalDevice = choose_physical_device(instance);
+	graphicsQueueFamilyIndex = find_queue_family_index(physicalDevice, vk::QueueFlagBits::eGraphics);
+	logicalDevice = create_logical_device(physicalDevice, graphicsQueueFamilyIndex, deletionQueue);
+	graphicsQueue = logicalDevice.getQueue(graphicsQueueFamilyIndex, 0);
 }
 
 Engine::~Engine() {

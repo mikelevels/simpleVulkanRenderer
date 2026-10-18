@@ -11,6 +11,8 @@ std::vector<const char*> required_device_extensions() {
 		// Stage 4: presenting images to a window is an extension, because
 		// a GPU can be used without any screen at all.
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		// Stage 9: shaders without pipelines (see shader.h).
+		VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
 	};
 }
 
@@ -32,6 +34,19 @@ bool supports_extensions(vk::PhysicalDevice device, const std::vector<const char
 	return true;
 }
 
+// Stage 9: having an extension is not enough; its FEATURES must be
+// supported too, and then turned on when the device is made. getFeatures2
+// fills a chain of feature structs, one per extension/version we ask about.
+bool supports_features(vk::PhysicalDevice device) {
+	auto chain = device.getFeatures2<vk::PhysicalDeviceFeatures2,
+		vk::PhysicalDeviceShaderObjectFeaturesEXT>();
+	if (!chain.get<vk::PhysicalDeviceShaderObjectFeaturesEXT>().shaderObject) {
+		Logger::get_logger().print("\tno shaderObject feature");
+		return false;
+	}
+	return true;
+}
+
 // Can we use this GPU at all? The author only checks extensions; a GPU must
 // also support Vulkan 1.3, which we ask for in the instance (entry 14).
 bool is_suitable(vk::PhysicalDevice device) {
@@ -39,7 +54,10 @@ bool is_suitable(vk::PhysicalDevice device) {
 		Logger::get_logger().print("\tsupports Vulkan older than 1.3");
 		return false;
 	}
-	return supports_extensions(device, required_device_extensions());
+	// Extensions first: asking about the features of an extension the GPU
+	// doesn't have is not allowed.
+	return supports_extensions(device, required_device_extensions())
+		&& supports_features(device);
 }
 
 }

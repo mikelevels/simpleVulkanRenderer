@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "device.h"
 #include "instance.h"
+#include "shader.h"
 #include "surface.h"
 #include "../logging/debug_messenger.h"
 #include "../logging/logger.h"
@@ -14,6 +15,7 @@ Engine::Engine(GLFWwindow* window, int width, int height) : window(window) {
 	make_instance_objects();
 	make_device_objects();
 	make_swapchain_objects(width, height);
+	make_drawing_objects();
 }
 
 Engine::~Engine() {
@@ -50,4 +52,13 @@ void Engine::make_swapchain_objects(int width, int height) {
 		frames.emplace_back(image, logicalDevice, swapchain.format.format, deletionQueue);
 	}
 	Logger::get_logger().print("Swapchain has " + std::to_string(frames.size()) + " images");
+}
+
+void Engine::make_drawing_objects() {
+	// SHADER_DIR is an absolute path set by CMakeLists.txt (the build
+	// folder's shaders/), so the program finds its shaders whatever folder
+	// it's started from. The author's "shaders/vertex.spv" only works when
+	// the working directory happens to be the project folder (entry 21).
+	shaders = make_shader_objects(logicalDevice,
+		SHADER_DIR "/vertex.spv", SHADER_DIR "/fragment.spv", deletionQueue);
 }

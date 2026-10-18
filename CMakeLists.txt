@@ -78,6 +78,11 @@ add_executable(App
 	# Stage 8: image views
 	src/renderer/image.h
 	src/renderer/image.cpp
+	# Stage 9: shader objects
+	src/backend/file.h
+	src/backend/file.cpp
+	src/renderer/shader.h
+	src/renderer/shader.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)
@@ -90,6 +95,31 @@ target_compile_definitions(App PRIVATE
 	# Fetch every Vulkan function pointer at runtime (see dispatch.cpp).
 	VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
 )
+
+# --- Stage 9: compile the GLSL shaders to SPIR-V at build time ---------------
+# The author runs a compile.bat by hand (with his own SDK path inside). Here
+# CMake runs glslc (from the Vulkan SDK) whenever a .vert/.frag file changes,
+# and the program reads the .spv files from SHADER_DIR.
+set(SHADER_DIR "${CMAKE_BINARY_DIR}/shaders")
+set(SPIRV_FILES "")
+foreach(STAGE IN ITEMS vert:vertex frag:fragment)
+	string(REPLACE ":" ";" PAIR ${STAGE})
+	list(GET PAIR 0 EXT)
+	list(GET PAIR 1 NAME)
+	set(SRC "${CMAKE_SOURCE_DIR}/shaders/shader.${EXT}")
+	set(SPV "${SHADER_DIR}/${NAME}.spv")
+	add_custom_command(
+		OUTPUT ${SPV}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_DIR}
+		COMMAND Vulkan::glslc ${SRC} -o ${SPV}
+		DEPENDS ${SRC}
+		COMMENT "glslc shader.${EXT} -> ${NAME}.spv"
+	)
+	list(APPEND SPIRV_FILES ${SPV})
+endforeach()
+add_custom_target(Shaders DEPENDS ${SPIRV_FILES})
+add_dependencies(App Shaders)
+target_compile_definitions(App PRIVATE SHADER_DIR="${SHADER_DIR}")
 
 # C++20: the author moves to C++20 (stdcpp20) in later stages; we start there.
 target_compile_features(App PRIVATE cxx_std_20)

@@ -27,6 +27,21 @@ std::uint32_t find_queue_family_index(vk::PhysicalDevice physicalDevice,
 	throw std::runtime_error("No queue family can do the requested work");
 }
 
+namespace {
+
+// Create the device with the features we use turned on.
+vk::Device create_with_features(vk::PhysicalDevice physicalDevice,
+	const vk::DeviceCreateInfo& deviceInfo) {
+	// Stage 9: feature structs are chained through pNext; vk::StructureChain
+	// links them for us and checks at compile time that each struct is
+	// allowed in this chain.
+	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceShaderObjectFeaturesEXT> chain(
+		deviceInfo, vk::PhysicalDeviceShaderObjectFeaturesEXT(VK_TRUE));
+	return physicalDevice.createDevice(chain.get<vk::DeviceCreateInfo>());
+}
+
+}
+
 vk::Device create_logical_device(vk::PhysicalDevice physicalDevice,
 	std::uint32_t queueFamilyIndex, DeletionQueue& deletionQueue) {
 	// One queue from that family. Priority (0..1) only matters between
@@ -40,7 +55,7 @@ vk::Device create_logical_device(vk::PhysicalDevice physicalDevice,
 	// passes them, with a count of 1 even when the list is null (entry 16).
 	vk::DeviceCreateInfo deviceInfo({}, queueInfo, {}, extensions);
 
-	vk::Device device = physicalDevice.createDevice(deviceInfo);
+	vk::Device device = create_with_features(physicalDevice, deviceInfo);
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(device);   // dispatcher level 3
 	deletionQueue.push([device] {
 		device.destroy();

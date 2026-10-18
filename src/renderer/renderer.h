@@ -17,6 +17,7 @@
 //   swapchain.cpp       the images shown in the window            (Stage 7)
 //   frame.cpp           what's needed to draw into one image      (Stage 7)
 //   image.cpp           image views                               (Stage 8)
+//   shader.cpp          shader objects                            (Stage 9)
 #pragma once
 #include "deletion_queue.h"
 #include "frame.h"
@@ -42,6 +43,7 @@ private:
 	void make_instance_objects();                         // Stages 2, 3, 6
 	void make_device_objects();                           // Stages 4, 5
 	void make_swapchain_objects(int width, int height);   // Stage 7
+	void make_drawing_objects();                          // Stage 9
 
 	// Not owned: the window belongs to main(). The engine draws into it.
 	GLFWwindow* window;
@@ -65,4 +67,6 @@ private:
 	// Stage 7: the images shown in the window, one Frame per image.
 	Swapchain swapchain;
 	std::vector<Frame> frames;
+	// Stage 9: { vertex shader, fragment shader }
+	std::vector<vk::ShaderEXT> shaders;
 };

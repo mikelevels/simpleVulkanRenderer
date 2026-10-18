@@ -2,7 +2,6 @@
 #include "render_thread.h"
 #include "renderer.h"
 #include "../logging/logger.h"
-#include <chrono>
 #include <exception>
 
 namespace {   // "anonymous namespace": visible in this .cpp file only
@@ -16,10 +15,9 @@ void render_thread_main(GLFWwindow* window, int width, int height,
 	try {
 		Engine engine(window, width, height);   // built and destroyed on THIS thread
 		while (!done->load()) {
-			// Later stages draw one frame here. For now there is nothing to
-			// do, so sleep instead of spinning: the author's empty loop keeps
-			// one CPU core at 100% (bugsExplained.md, entry 7).
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			// Stage 10: one frame per loop. (Stage 1 slept here while there
+			// was nothing to draw; see bugsExplained.md, entry 7.)
+			engine.draw();
 		}
 	}
 	catch (const std::exception& error) {

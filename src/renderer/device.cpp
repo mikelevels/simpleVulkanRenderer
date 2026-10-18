@@ -39,7 +39,13 @@ bool supports_extensions(vk::PhysicalDevice device, const std::vector<const char
 // fills a chain of feature structs, one per extension/version we ask about.
 bool supports_features(vk::PhysicalDevice device) {
 	auto chain = device.getFeatures2<vk::PhysicalDeviceFeatures2,
-		vk::PhysicalDeviceShaderObjectFeaturesEXT>();
+		vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceShaderObjectFeaturesEXT>();
+	// Stage 10: dynamic rendering is core in Vulkan 1.3, but still a feature
+	// that has to be checked and turned on.
+	if (!chain.get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering) {
+		Logger::get_logger().print("\tno dynamicRendering feature");
+		return false;
+	}
 	if (!chain.get<vk::PhysicalDeviceShaderObjectFeaturesEXT>().shaderObject) {
 		Logger::get_logger().print("\tno shaderObject feature");
 		return false;

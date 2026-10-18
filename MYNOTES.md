@@ -21,3 +21,14 @@ Run threaded code in both Debug and Release (the author's advice, and ours).
 | Stage | Notes | What it added |
 |---|---|---|
 | 1 App Structure | `MyNotes/stage01-appStructure.md` | CMake project, GLFW window, thread-safe logger, render thread (start/stop/join), app event loop |
+| 2 Instance | `MyNotes/stage02-instance.md` | Vulkan instance, deletion queue, dynamic dispatcher |
+| 3 Validation Layers | `MyNotes/stage03-validationLayers.md` | validation layer (Debug only), debug messenger |
+| 4 Physical Device | `MyNotes/stage04-physicalDevice.md` | GPU selection (Vulkan 1.3, extensions, discrete preferred) |
+| 5 Logical Device | `MyNotes/stage05-logicalDevice.md` | queue families, logical device, graphics queue |
+| 6 Surface | `MyNotes/stage06-surface.md` | window surface, present support |
+| 7 Swapchain | `MyNotes/stage07-swapchain.md` | swapchain, frames, window size in pixels |
+| 8 Image Views | `MyNotes/stage08-imageViews.md` | one image view per swapchain image |
+| 9 Shader Objects | `MyNotes/stage09-shaderObjects.md` | GLSL shaders compiled by CMake, linked shader objects |
+| 10 Dynamic Rendering | `MyNotes/stage10-dynamicRendering.md` | command buffers, layouts, dynamic state, acquire/submit/present: **the triangle** |
+
+Review guide for Stages 1 to 10: `MyNotes/milestone-helloTriangle.md`.

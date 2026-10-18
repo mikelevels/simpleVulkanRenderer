@@ -5,6 +5,7 @@
 #include "device.h"
 #include "instance.h"
 #include "shader.h"
+#include "command.h"
 #include "surface.h"
 #include "../logging/debug_messenger.h"
 #include "../logging/logger.h"
@@ -20,6 +21,17 @@ Engine::Engine(GLFWwindow* window, int width, int height) : window(window) {
 
 Engine::~Engine() {
 	Logger::get_logger().print("Goodbye see you!");
+	// Destroying objects the GPU is still using is an error, so wait until
+	// it has finished everything we submitted. A destructor must not throw
+	// (that would call std::terminate during stack unwinding), hence the try.
+	try {
+		if (logicalDevice) {
+			logicalDevice.waitIdle();
+		}
+	}
+	catch (const std::exception& error) {
+		Logger::get_logger().print(error.what());
+	}
 	// deletionQueue's destructor runs after this body, destroying the
 	// Vulkan objects newest first.
 }
@@ -61,4 +73,14 @@ void Engine::make_drawing_objects() {
 	// the working directory happens to be the project folder (entry 21).
 	shaders = make_shader_objects(logicalDevice,
 		SHADER_DIR "/vertex.spv", SHADER_DIR "/fragment.spv", deletionQueue);
+	// Stage 10: one pre-recorded command buffer per swapchain image.
+	commandPool = make_command_pool(logicalDevice, graphicsQueueFamilyIndex, deletionQueue);
+	for (Frame& frame : frames) {
+		frame.set_command_buffer(allocate_command_buffer(logicalDevice, commandPool),
+			shaders, swapchain.extent);
+	}
+	imageAcquiredFence = logicalDevice.createFence(vk::FenceCreateInfo());
+	vk::Device device = logicalDevice;
+	vk::Fence fence = imageAcquiredFence;
+	deletionQueue.push([device, fence] { device.destroyFence(fence); });
 }

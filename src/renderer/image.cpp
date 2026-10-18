@@ -16,3 +16,22 @@ vk::ImageView create_image_view(vk::Device logicalDevice, vk::Image image, vk::F
 		vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 	return logicalDevice.createImageView(createInfo);
 }
+
+void transition_image_layout(vk::CommandBuffer commandBuffer, vk::Image image,
+	const LayoutTransition& transition) {
+	vk::ImageMemoryBarrier barrier;
+	barrier.srcAccessMask = transition.srcAccess;
+	barrier.dstAccessMask = transition.dstAccess;
+	barrier.oldLayout = transition.oldLayout;
+	barrier.newLayout = transition.newLayout;
+	// IGNORED: the image stays with the same queue family.
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = image;
+	barrier.subresourceRange = vk::ImageSubresourceRange(
+		vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+	// pipelineBarrier(srcStages, dstStages, flags, memory barriers,
+	//     buffer barriers, image barriers)
+	commandBuffer.pipelineBarrier(transition.srcStage, transition.dstStage, {},
+		nullptr, nullptr, barrier);
+}

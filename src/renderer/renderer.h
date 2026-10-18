@@ -18,6 +18,9 @@
 //   frame.cpp           what's needed to draw into one image      (Stage 7)
 //   image.cpp           image views                               (Stage 8)
 //   shader.cpp          shader objects                            (Stage 9)
+//   command.cpp         command pool and buffers                  (Stage 10)
+//   dynamic_state.cpp   drawing state for shader objects          (Stage 10)
+//   draw.cpp            Engine::draw: one frame on screen         (Stage 10)
 #pragma once
 #include "deletion_queue.h"
 #include "frame.h"
@@ -38,12 +41,18 @@ public:
 	Engine(const Engine&) = delete;
 	Engine& operator=(const Engine&) = delete;
 
+	// Stage 10: put one frame on screen (draw.cpp). Called in a loop by the
+	// render thread.
+	void draw();
+
 private:
 	// The constructor's three phases, in order.
 	void make_instance_objects();                         // Stages 2, 3, 6
 	void make_device_objects();                           // Stages 4, 5
 	void make_swapchain_objects(int width, int height);   // Stage 7
-	void make_drawing_objects();                          // Stage 9
+	void make_drawing_objects();                          // Stages 9, 10
+	std::uint32_t acquire_image();                        // Stage 10 (draw.cpp)
+	void present_image(std::uint32_t imageIndex);         // Stage 10 (draw.cpp)
 
 	// Not owned: the window belongs to main(). The engine draws into it.
 	GLFWwindow* window;
@@ -69,4 +78,8 @@ private:
 	std::vector<Frame> frames;
 	// Stage 9: { vertex shader, fragment shader }
 	std::vector<vk::ShaderEXT> shaders;
+	// Stage 10: where command buffers come from, and a fence that tells the
+	// CPU when a swapchain image is really free to draw into.
+	vk::CommandPool commandPool;
+	vk::Fence imageAcquiredFence;
 };

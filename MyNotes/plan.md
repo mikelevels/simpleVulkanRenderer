@@ -11,6 +11,10 @@ A C++ Vulkan renderer learned by following GetIntoGameDev's **"Vulkan 2024"** se
 
 Later, this code becomes the second renderer backend (`engine/vulkan/`) next to the WebGPU one (`engine/webgpu/`), in the renderer-centric engine you chose on 2026-10-08.
 
+## Where we are (2026-10-10)
+
+Stages 1 to 10 are done: the triangle is on screen (`images/stage10-triangle.png`). You asked to fast-track to here, then review everything before going on. Each stage was built and run in Debug and Release, and saved separately, so each becomes its own commit when you say "commit". Next: Stage 11 (runtime shader compilation), then 12, then the stop before 13.
+
 ## Decisions (2026-10-10)
 
 1. **Series: Vulkan 2024**, not the 2022 one I started with. Your words: "Follow the 2024 playlist."
@@ -37,16 +41,16 @@ Later, this code becomes the second renderer backend (`engine/vulkan/`) next to 
 | Stage | Video | Folder | Status |
 |---|---|---|---|
 | - | Making a Vulkan cmake project in macOS | - | skipped (macOS); our CMakeLists.txt instead |
-| 1 | App Structure | 01 - app structure | **done, awaiting commit** |
-| 2 | Instance Creation | 02 - instance | |
-| 3 | Validation Layers | 03 - validation layers | |
-| 4 | Physical Device Selection | 04 - physical device | |
-| 5 | Logical Device Creation | 05 - logical device | |
-| 6 | Surfaces | 06 - surface | |
-| 7 | Swapchain | 07 - swapchain | |
-| 8 | Image Views | 08 - image views | |
-| 9 | Shader Objects | 09 - shaders | |
-| 10 | Dynamic Rendering | 10 - command buffers | |
+| 1 | App Structure | 01 - app structure | done, awaiting commit |
+| 2 | Instance Creation | 02 - instance | done, awaiting commit |
+| 3 | Validation Layers | 03 - validation layers | done, awaiting commit |
+| 4 | Physical Device Selection | 04 - physical device | done, awaiting commit |
+| 5 | Logical Device Creation | 05 - logical device | done, awaiting commit |
+| 6 | Surfaces | 06 - surface | done, awaiting commit |
+| 7 | Swapchain | 07 - swapchain | done, awaiting commit |
+| 8 | Image Views | 08 - image views | done, awaiting commit |
+| 9 | Shader Objects | 09 - shaders | done, awaiting commit |
+| 10 | Dynamic Rendering | 10 - command buffers | done, awaiting commit |
 | 11 | Runtime Shader Compilation | 11 - spirv compilation | |
 | 12 | Synchronization | 12 - synchronization | |
 | **13** | **Multithreaded Rendering** | 13 - multithreaded rendering (two versions: conservative, aggressive) | **STOP before this one: your review of multithreading first, then line by line together** |

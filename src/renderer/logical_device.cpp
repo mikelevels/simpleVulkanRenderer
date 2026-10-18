@@ -35,8 +35,15 @@ vk::Device create_with_features(vk::PhysicalDevice physicalDevice,
 	// Stage 9: feature structs are chained through pNext; vk::StructureChain
 	// links them for us and checks at compile time that each struct is
 	// allowed in this chain.
-	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceShaderObjectFeaturesEXT> chain(
-		deviceInfo, vk::PhysicalDeviceShaderObjectFeaturesEXT(VK_TRUE));
+	// Stage 10: dynamic rendering, a Vulkan 1.3 core feature. The author
+	// also enables the VK_KHR_dynamic_rendering and VK_KHR_synchronization2
+	// EXTENSIONS, which are unnecessary on a 1.3 device (they were promoted
+	// to core), and synchronization2, which Stage 10 doesn't use yet.
+	vk::PhysicalDeviceVulkan13Features vulkan13;
+	vulkan13.dynamicRendering = VK_TRUE;
+	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDeviceVulkan13Features,
+		vk::PhysicalDeviceShaderObjectFeaturesEXT> chain(
+		deviceInfo, vulkan13, vk::PhysicalDeviceShaderObjectFeaturesEXT(VK_TRUE));
 	return physicalDevice.createDevice(chain.get<vk::DeviceCreateInfo>());
 }
 

@@ -83,6 +83,12 @@ add_executable(App
 	src/backend/file.cpp
 	src/renderer/shader.h
 	src/renderer/shader.cpp
+	# Stage 10: dynamic rendering, the triangle
+	src/renderer/command.h
+	src/renderer/command.cpp
+	src/renderer/dynamic_state.h
+	src/renderer/dynamic_state.cpp
+	src/renderer/draw.cpp
 )
 
 target_link_libraries(App PRIVATE glfw Vulkan::Vulkan Threads::Threads)
